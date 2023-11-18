@@ -1,16 +1,19 @@
 package models
 
+import "go.mongodb.org/mongo-driver/bson/primitive"
+
 type Log struct {
-	Level      string   `json:"level"`
-	Message    string   `json:"message"`
-	ResourceID string   `json:"resourceId"`
-	Timestamp  string   `json:"timestamp"`
-	TraceID    string   `json:"traceId"`
-	SpanID     string   `json:"spanId"`
-	Commit     string   `json:"commit"`
-	Metadata   Metadata `json:"metadata"`
+	ID         primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
+	Level      string             `bson:"level" json:"level"`
+	Message    string             `bson:"message" json:"message"`
+	ResourceID string             `bson:"resourceId" json:"resourceId"`
+	Timestamp  string             `bson:"timestamp" json:"timestamp"`
+	TraceID    string             `bson:"traceId" json:"traceId"`
+	SpanID     string             `bson:"spanId" json:"spanId"`
+	Commit     string             `bson:"commit" json:"commit"`
+	Metadata   Metadata           `bson:"metadata" json:"metadata"`
 }
 
 type Metadata struct {
-	ParentResourceID string `json:"parentResourceId"`
+	ParentResourceID string `bson:"parentResourceId" json:"parentResourceId"`
 }

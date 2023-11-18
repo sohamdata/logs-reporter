@@ -10,6 +10,7 @@ func Router() *mux.Router {
 	router := mux.NewRouter()
 
 	router.HandleFunc("/logs", controller.HandleLogIngestion).Methods("POST")
+	router.HandleFunc("/logs", controller.HandleLogSearch).Methods("GET")
 
 	return router
 }

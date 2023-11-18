@@ -10,6 +10,8 @@ import (
 	"sohamdata/log-ingestor/models"
 
 	"github.com/joho/godotenv"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -64,4 +66,54 @@ func HandleLogIngestion(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Println("Inserted document ID:", result.InsertedID)
+}
+
+func HandleLogSearch(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	params := r.URL.Query()
+
+	filter := bson.M{}
+
+	// for key, values := range params {
+	// 	if len(values) > 0 {
+	// 		filter[key] = values[0]
+	// 	}
+	// }
+
+	for key, values := range params {
+		if len(values) > 0 {
+			// Use a case-insensitive regular expression for string fields
+			if key == "message" || key == "level" || key == "resourceId" || key == "traceId" || key == "spanId" || key == "commit" || key == "parentResourceId" {
+				filter[key] = bson.M{"$regex": primitive.Regex{Pattern: values[0], Options: "i"}}
+			} else {
+				filter[key] = values[0]
+			}
+		}
+	}
+
+	logs, err := searchLogs(filter)
+	if err != nil {
+		http.Error(w, "Failed to retrieve logs", http.StatusInternalServerError)
+		return
+	}
+
+	json.NewEncoder(w).Encode(logs)
+}
+
+func searchLogs(filter bson.M) ([]models.Log, error) {
+	var logs []models.Log
+
+	cursor, err := collection.Find(context.Background(), filter, options.Find())
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(context.Background())
+
+	err = cursor.All(context.Background(), &logs)
+	if err != nil {
+		return nil, err
+	}
+
+	return logs, nil
 }
