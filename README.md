@@ -26,6 +26,9 @@ go get -d ./...
 go run main.go
 ```
 
+- setup mongodb:
+    - enter credentials in `backend/example.env` file and rename it to .env
+
 ## System Design:
 ### Frontend:
 - React.js with TypeScript, React Router, React hook form, Axios, Vite
@@ -68,17 +71,19 @@ go run main.go
 - The search query can also contain filters, which are applied to the logs before searching for the query.
 
 ## Improvements:
-- for the database, we can use a SQL database like PostgreSQL, which will make it easier to query the data, as we can use SQL queries instead of using regular expressions.
-- the frontend can be improved by adding more features like pagination, sorting, time range filters, etc.
-- the backend can be improved by adding more endpoints, like get all logs, get logs by level, get logs by timestamp, etc.
+- Database: we can use a SQL database like PostgreSQL, which will make it easier to query the data, as we can use SQL queries instead of using regular expressions.
+- frontend: adding more features like pagination, sorting, time range filters, etc.
+- the backend: adding more endpoints, like get all logs, get logs by level, get logs by timestamp, etc.
 - We can also use ElasticSearch for searching logs, which is a very powerful search engine.
 - caching can be added to the frontend using redux, etc., to improve performance and reduce the number of requests to the backend.
-
 - we can also add authentication and authorization to the backend, to make sure that only authorized users can see some logs, etc.
 
 ## Screenshots:
 ![search](assets/search.png)
 ![submitlog](assets/submitlog.png)
+
+## screenrecording:
+![screenrecording](assets/dyke.gif)
 
 Job Application:
 ![applicationmail](assets/applicationmail.png)
