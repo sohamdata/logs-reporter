@@ -3,7 +3,7 @@ import { Log } from '../utils/types';
 import axios from 'axios';
 
 export default function SubmitLog() {
-    const { register, handleSubmit, reset } = useForm<Log>();
+    const { register, handleSubmit, reset, setValue } = useForm<Log>();
 
     const onSubmit = async (data: Log) => {
         console.log('Submitting log:', data);
@@ -19,6 +19,18 @@ export default function SubmitLog() {
             console.log('Log submitted successfully:', response.data);
         } catch (error) {
             console.error('Error submitting log:', error);
+        }
+    };
+
+    const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+        const pastedData = e.clipboardData.getData('text');
+        try {
+            const parsedData = JSON.parse(pastedData) as Log;
+            Object.entries(parsedData).forEach(([key, value]) => {
+                setValue(key as keyof Log, value);
+            });
+        } catch (error) {
+            console.error('Error parsing pasted JSON:', error);
         }
     };
 
@@ -122,6 +134,18 @@ export default function SubmitLog() {
                         />
                     </div>
                 </div>
+
+                <div className="mb-4">
+                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="logData">
+                        Paste Log (JSON)
+                    </label>
+                    <textarea
+                        className="border rounded-md w-full py-2 px-3"
+                        rows={5}
+                        onPaste={handlePaste}
+                    />
+                </div>
+
                 <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" type="submit">
                     Submit
                 </button>
