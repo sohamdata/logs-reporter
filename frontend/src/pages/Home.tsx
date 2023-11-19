@@ -10,9 +10,10 @@ type Log = {
     traceId: string;
     spanId: string;
     commit: string;
-    parentResourceId: string;
+    metadata: {
+        parentResourceId: string;
+    };
 };
-
 
 const Home: React.FC = () => {
     const [filters, setFilters] = useState({
@@ -26,7 +27,7 @@ const Home: React.FC = () => {
         parentResourceId: '',
     });
 
-    const [results, setResults] = useState([]);
+    const [results, setResults] = useState<Log[] | null>(null);
 
     const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -170,20 +171,20 @@ const Home: React.FC = () => {
 
             <div className="mt-8">
                 <h2 className="text-lg font-bold mb-2">Results</h2>
-                <ul>
-                    {results?.map((log: Log) => (
-                        <li key={log.id} className="mb-4 p-4 border rounded-md shadow-md bg-gray-50">
-                            <div className="text-sm">{log.timestamp}</div>
-                            <div className="font-bold">{log.message}</div>
-                            <div className="text-sm">{log.level}</div>
-                            <div className="text-sm">{log.resourceId}</div>
-                            <div className="text-sm">{log.traceId}</div>
-                            <div className="text-sm">{log.spanId}</div>
-                            <div className="text-sm">{log.commit}</div>
-                            <div className="text-sm">{log.parentResourceId}</div>
-                        </li>
-                    ))}
-                </ul>
+                {results?.map((log: Log) => (
+                    <div key={log.id} className="mb-4 p-4 border rounded-md shadow-md bg-gray-50">
+                        {Object.entries(log).slice(1).map(([key, value]) => (
+                            <div key={key}>
+                                <span className="font-bold">{key}: </span>
+                                {typeof value === 'string' ? (
+                                    value
+                                ) : (
+                                    value.parentResourceId
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                ))}
             </div>
         </div>
     );

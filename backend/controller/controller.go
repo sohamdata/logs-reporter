@@ -84,8 +84,10 @@ func HandleLogSearch(w http.ResponseWriter, r *http.Request) {
 	for key, values := range params {
 		if len(values) > 0 {
 			// Use a case-insensitive regular expression for string fields
-			if key == "message" || key == "level" || key == "resourceId" || key == "traceId" || key == "spanId" || key == "commit" || key == "parentResourceId" {
+			if key == "message" || key == "level" || key == "resourceId" || key == "traceId" || key == "spanId" || key == "commit" {
 				filter[key] = bson.M{"$regex": primitive.Regex{Pattern: values[0], Options: "i"}}
+			} else if key == "parentResourceId" {
+				filter["metadata.parentResourceId"] = bson.M{"$regex": primitive.Regex{Pattern: values[0], Options: "i"}}
 			} else {
 				filter[key] = values[0]
 			}
