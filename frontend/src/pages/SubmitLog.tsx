@@ -8,7 +8,7 @@ export default function SubmitLog() {
     const onSubmit = async (data: Log) => {
         console.log('Submitting log:', data);
         try {
-            const response = await axios.post('http://localhost:3000/logs', data);
+            const response = await axios.post('http://localhost:3000/submitlog', data);
 
             if (response.status >= 200 && response.status < 300) {
                 alert('Log submitted successfully');
