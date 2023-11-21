@@ -45,6 +45,10 @@ func init() {
 	fmt.Println("Collection instance created!")
 }
 
+func HandleHome(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "Welcome to the Log Ingestor API!")
+}
+
 func HandleLogIngestion(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
