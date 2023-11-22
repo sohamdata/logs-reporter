@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import axios from '../utils/axios';
 import { Log } from '../utils/types';
 
 export default function Home() {
@@ -35,7 +35,7 @@ export default function Home() {
         }
 
         try {
-            const response = await axios.get('http://localhost:3000/logs', {
+            const response = await axios.get('/logs', {
                 params: selectedFilters,
             });
 

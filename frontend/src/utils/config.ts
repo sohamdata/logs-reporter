@@ -1,0 +1,1 @@
+export const HOST_API = import.meta.env.DEV ? import.meta.env.VITE_LOCAL_BACKEND_URL : import.meta.env.VITE_LIVE_SERVER_URL;
