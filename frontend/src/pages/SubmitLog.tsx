@@ -8,7 +8,7 @@ export default function SubmitLog() {
     const onSubmit = async (data: Log) => {
         console.log('Submitting log:', data);
         try {
-            const response = await axios.post('/submitlog', data);
+            const response = await axios.post('/api/go/logger/submitlog', data);
 
             if (response.status >= 200 && response.status < 300) {
                 alert('Log submitted successfully');

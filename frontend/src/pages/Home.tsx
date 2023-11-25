@@ -35,7 +35,7 @@ export default function Home() {
         }
 
         try {
-            const response = await axios.get('/logs', {
+            const response = await axios.get('/api/go/logger/logs', {
                 params: selectedFilters,
             });
 

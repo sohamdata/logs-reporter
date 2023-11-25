@@ -9,10 +9,10 @@ import (
 func Router() *mux.Router {
 	router := mux.NewRouter()
 
-	router.HandleFunc("/", controller.HandleHome).Methods("GET")
+	router.HandleFunc("/api/go/logger", controller.HandleHome).Methods("GET")
 
-	router.HandleFunc("/submitlog", controller.HandleLogIngestion).Methods("POST")
-	router.HandleFunc("/logs", controller.HandleLogSearch).Methods("GET")
+	router.HandleFunc("/api/go/logger/submitlog", controller.HandleLogIngestion).Methods("POST")
+	router.HandleFunc("/api/go/logger/logs", controller.HandleLogSearch).Methods("GET")
 
 	return router
 }
