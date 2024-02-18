@@ -2,9 +2,12 @@ package controller
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
+	"sohamdata/log-ingestor/models"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/joho/godotenv"
@@ -21,12 +24,12 @@ func init() {
 		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
 		os.Exit(1)
 	}
-	defer conn.Close(context.Background())
+	// defer conn.Close(context.Background())
 
 	var greeting string
-	err = conn.QueryRow(context.Background(), "select 'Hello, world!'").Scan(&greeting)
+	err = conn.QueryRow(context.Background(), "select 'Connected to postgres'").Scan(&greeting)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "QueryRow failed: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Error establishing connection to database: %v\n", err)
 		os.Exit(1)
 	}
 
@@ -37,19 +40,134 @@ func HandleHome(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Welcome to the Log Ingestor API!")
 }
 
-// func HandleLogIngestion(w http.ResponseWriter, r *http.Request) {
-// 	// implement the ingestion logic
-// 	fmt.Fprintf(w, "post req")
+func HandleLogIngestion(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 
-// }
+	var logEntry models.Log
 
-// func HandleLogSearch(w http.ResponseWriter, r *http.Request) {
-// 	// implement the search logic
-// 	fmt.Fprintf(w, "get req")
+	err := json.NewDecoder(r.Body).Decode(&logEntry)
+	if err != nil {
+		http.Error(w, "Invalid JSON format", http.StatusBadRequest)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 
-// }
+	if err := createLogsTableIfNotExists(); err != nil {
+		log.Println("Error creating logs table:", err)
+		http.Error(w, "Failed to create logs table", http.StatusInternalServerError)
+		return
+	}
 
-// func searchLogs(w http.ResponseWriter, r *http.Request) []models.Log {
-// 	// implement the search logic
-// 	fmt.Fprintf(w, "get method helper")
-// }
+	var sqlQuery string = `
+        INSERT INTO logs (level, message, resourceId, timestamp, traceId, spanId, commit, parentResourceId)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+    `
+	_, err = conn.Exec(context.Background(), sqlQuery, logEntry.Level, logEntry.Message, logEntry.ResourceID, logEntry.Timestamp, logEntry.TraceID, logEntry.SpanID, logEntry.Commit, logEntry.Metadata.ParentResourceID)
+	if err != nil {
+		log.Println("Error inserting log entry into the database:", err)
+		http.Error(w, "Failed to insert log entry into the database", http.StatusInternalServerError)
+		return
+	}
+
+	log.Println("Inserted log entry into PostgreSQL!")
+}
+
+func createLogsTableIfNotExists() error {
+	createTableQuery := `
+        CREATE TABLE IF NOT EXISTS logs (
+            ID SERIAL PRIMARY KEY,
+            level TEXT,
+            message TEXT,
+            resourceId TEXT,
+            timestamp TIMESTAMP,
+            traceId TEXT,
+            spanId TEXT,
+            commit TEXT,
+            parentResourceId TEXT
+        );
+    `
+
+	_, err := conn.Exec(context.Background(), createTableQuery)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func HandleShowLogs(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	var logs []models.Log
+
+	rows, err := conn.Query(context.Background(), "SELECT * FROM logs")
+	if err != nil {
+		log.Println("Error querying the database for logs:", err)
+		http.Error(w, "Failed to retrieve logs from the database", http.StatusInternalServerError)
+		return
+	}
+
+	for rows.Next() {
+		var logEntry models.Log
+		err = rows.Scan(&logEntry.ID, &logEntry.Level, &logEntry.Message, &logEntry.ResourceID, &logEntry.Timestamp, &logEntry.TraceID, &logEntry.SpanID, &logEntry.Commit, &logEntry.Metadata.ParentResourceID)
+		if err != nil {
+			log.Println("Error scanning the database for logs:", err)
+			http.Error(w, "Failed to retrieve logs from the database", http.StatusInternalServerError)
+			return
+		}
+		logs = append(logs, logEntry)
+	}
+
+	json.NewEncoder(w).Encode(logs)
+}
+
+func HandleLogSearch(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	// params := r.URL.Query()
+
+	// filter := bson.M{}
+
+	// // for key, values := range params {
+	// // 	if len(values) > 0 {
+	// // 		filter[key] = values[0]
+	// // 	}
+	// // }
+
+	// for key, values := range params {
+	// 	if len(values) > 0 {
+	// 		// Use a case-insensitive regular expression for string fields
+	// 		if key == "message" || key == "level" || key == "resourceId" || key == "traceId" || key == "spanId" || key == "commit" {
+	// 			filter[key] = bson.M{"$regex": primitive.Regex{Pattern: values[0], Options: "i"}}
+	// 		} else if key == "parentResourceId" {
+	// 			filter["metadata.parentResourceId"] = bson.M{"$regex": primitive.Regex{Pattern: values[0], Options: "i"}}
+	// 		} else {
+	// 			filter[key] = values[0]
+	// 		}
+	// 	}
+	// }
+
+	// logs, err := searchLogs(filter)
+	// if err != nil {
+	// 	http.Error(w, "Failed to retrieve logs", http.StatusInternalServerError)
+	// 	return
+	// }
+
+	// json.NewEncoder(w).Encode(logs)
+}
+
+func searchLogs() {
+	// 	var logs []models.Log
+
+	// 	cursor, err := collection.Find(context.Background(), filter, options.Find())
+	// 	if err != nil {
+	// 		return nil, err
+	// 	}
+	// 	defer cursor.Close(context.Background())
+
+	// 	err = cursor.All(context.Background(), &logs)
+	// 	if err != nil {
+	// 		return nil, err
+	// 	}
+
+	// 	return logs, nil
+}
